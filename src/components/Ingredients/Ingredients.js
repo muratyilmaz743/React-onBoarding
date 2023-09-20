@@ -40,7 +40,7 @@ function Ingredients() {
   const removeIngredientHandler = (ingredientId) => {
     setIsLoading(true);
     fetch(
-      `https://react-basics-df486-default-rtdb.firebaseio.com/ingredients/${ingredientId}`,
+      `https://react-basics-df486-default-rtdb.firebaseio.com/ingredients/${ingredientId}.json`,
       {
         method: 'DELETE',
       }
