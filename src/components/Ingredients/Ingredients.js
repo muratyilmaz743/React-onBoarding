@@ -1,12 +1,26 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useReducer, useState } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
 import Search from './Search';
 import ErrorModal from '../UI/ErrorModal';
 
+const ingredientReducer = (currentIngredients, action) => {
+  switch (action.type) {
+    case 'SET':
+      return action.ingredients;
+    case 'ADD':
+      return [...currentIngredients, action.ingredient];
+    case 'DELETE':
+      return currentIngredients.filter((ing) => ing.id !== action.id);
+    default:
+      throw new Error('We need a type to perform.');
+  }
+};
+
 function Ingredients() {
-  const [userIngredients, setUserIngredients] = useState([]);
+  const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+  //const [userIngredients, setUserIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 
@@ -25,10 +39,10 @@ function Ingredients() {
         return response.json();
       })
       .then((res) => {
-        setUserIngredients((prevIngredients) => [
-          ...prevIngredients,
-          { id: res.name, ...ingredient },
-        ]);
+        dispatch({
+          type: 'ADD',
+          ingredient: { id: res.name, ...ingredient },
+        });
       });
   };
 
@@ -47,9 +61,7 @@ function Ingredients() {
     )
       .then(() => {
         setIsLoading(false);
-        setUserIngredients((prevIngredients) =>
-          prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
-        );
+        dispatch({ type: 'DELETE', id: ingredientId });
       })
       .catch((error) => {
         setError(error.message);
@@ -57,7 +69,7 @@ function Ingredients() {
   };
 
   const filterIngredientsHandler = useCallback((filteredIngredients) => {
-    setUserIngredients(filteredIngredients);
+    dispatch({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
   return (
