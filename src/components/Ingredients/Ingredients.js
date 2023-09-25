@@ -24,7 +24,9 @@ const httpReducer = (curHttpState, action) => {
     case 'RESPONSE':
       return { ...curHttpState, loading: false };
     case 'ERROR':
-      return { loading: false, error: action.errorData };
+      return { loading: false, error: action.errorMessage };
+    case 'CLEAR':
+      return { ...curHttpState,  error: null};
     default:
       throw new Error('Action type is wrong.');
   }
@@ -38,11 +40,11 @@ function Ingredients() {
     loading: false,
     error: null,
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+ // const [isLoading, setIsLoading] = useState(false);
+ // const [error, setError] = useState();
 
   const addIngredientHandler = (ingredient) => {
-    setIsLoading(true);
+    dispatchHttp({type: 'SEND'})
     fetch(
       'https://react-basics-df486-default-rtdb.firebaseio.com/ingredients.json',
       {
@@ -52,7 +54,7 @@ function Ingredients() {
       }
     )
       .then((response) => {
-        setIsLoading(false);
+        dispatchHttp({type: 'RESPONSE'});
         return response.json();
       })
       .then((res) => {
@@ -64,12 +66,12 @@ function Ingredients() {
   };
 
   const clearError = () => {
-    setError(null);
-    setIsLoading(false);
+    dispatchHttp({type: 'CLEAR'})
+
   };
 
   const removeIngredientHandler = (ingredientId) => {
-    setIsLoading(true);
+    dispatchHttp({type: 'SEND'});
     fetch(
       `https://react-basics-df486-default-rtdb.firebaseio.com/ingredients/${ingredientId}.json`,
       {
@@ -77,11 +79,11 @@ function Ingredients() {
       }
     )
       .then(() => {
-        setIsLoading(false);
+        dispatchHttp({type: 'SEND'})
         dispatchIngredient({ type: 'DELETE', id: ingredientId });
       })
       .catch((error) => {
-        setError(error.message);
+        dispatchHttp({tyoe: 'ERROR', errorMessage: error})
       });
   };
 
@@ -91,11 +93,11 @@ function Ingredients() {
 
   return (
     <div className='App'>
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>}
 
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.loading}
       />
 
       <section>
