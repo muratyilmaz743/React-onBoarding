@@ -17,10 +17,27 @@ const ingredientReducer = (currentIngredients, action) => {
       throw new Error('We need a type to perform.');
   }
 };
-
+const httpReducer = (curHttpState, action) => {
+  switch (action.type) {
+    case 'SEND':
+      return { loading: true, error: null };
+    case 'RESPONSE':
+      return { ...curHttpState, loading: false };
+    case 'ERROR':
+      return { loading: false, error: action.errorData };
+    default:
+      throw new Error('Action type is wrong.');
+  }
+};
 function Ingredients() {
-  const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  //const [userIngredients, setUserIngredients] = useState([]);
+  const [userIngredients, dispatchIngredient] = useReducer(
+    ingredientReducer,
+    []
+  );
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 
@@ -39,7 +56,7 @@ function Ingredients() {
         return response.json();
       })
       .then((res) => {
-        dispatch({
+        dispatchIngredient({
           type: 'ADD',
           ingredient: { id: res.name, ...ingredient },
         });
@@ -61,7 +78,7 @@ function Ingredients() {
     )
       .then(() => {
         setIsLoading(false);
-        dispatch({ type: 'DELETE', id: ingredientId });
+        dispatchIngredient({ type: 'DELETE', id: ingredientId });
       })
       .catch((error) => {
         setError(error.message);
@@ -69,7 +86,7 @@ function Ingredients() {
   };
 
   const filterIngredientsHandler = useCallback((filteredIngredients) => {
-    dispatch({ type: 'SET', ingredients: filteredIngredients });
+    dispatchIngredient({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
   return (
