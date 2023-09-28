@@ -24,7 +24,7 @@ const httpReducer = (curHttpState, action) => {
     case 'RESPONSE':
       return { ...curHttpState, loading: false };
     case 'ERROR':
-      return { loading: false, error: action.errorMessage };
+      return { loading: false, error: action.errourMessage };
     case 'CLEAR':
       return { ...curHttpState,  error: null};
     default:
@@ -91,14 +91,16 @@ function Ingredients() {
     dispatchIngredient({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
-  cosnt ingredientList = useMemo(<IngredientList
-    ingredients={userIngredients}
-    onRemoveItem={removeIngredientHandler}
-    />,[])
+  const  ingredientList = useMemo(() => {
+    return <IngredientList
+      ingredients={userIngredients}
+      onRemoveItem={removeIngredientHandler}
+    />
+  }, [userIngredients, removeIngredientHandler])
 
   return (
     <div className='App'>
-      {httpState.error && <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>}
+      {httpState.error && <ErrorModal onCloere={clearError}>{httpState.error}</ErrorModal>}
 
       <IngredientForm
         onAddIngredient={addIngredientHandler}
@@ -107,7 +109,7 @@ function Ingredients() {
 
       <section>
         <Search onSearchedIngredients={filterIngredientsHandler} />
-
+        {ingredientList}
       </section>
     </div>
   );
