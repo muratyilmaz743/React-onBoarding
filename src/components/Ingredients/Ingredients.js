@@ -1,4 +1,4 @@
-import React, { useCallback, useReducer } from 'react';
+import React, { useCallback, useReducer, useMemo } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -43,7 +43,7 @@ function Ingredients() {
  // const [isLoading, setIsLoading] = useState(false);
  // const [error, setError] = useState();
 
-  const addIngredientHandler = (ingredient) => {
+  const addIngredientHandler = useCallback((ingredient) => {
     dispatchHttp({type: 'SEND'})
     fetch(
       'https://react-basics-df486-default-rtdb.firebaseio.com/ingredients.json',
@@ -52,7 +52,7 @@ function Ingredients() {
         body: JSON.stringify(ingredient),
         headers: { 'Content-type': 'application/json' },
       }
-    )
+      )
       .then((response) => {
         dispatchHttp({type: 'RESPONSE'});
         return response.json();
@@ -63,21 +63,21 @@ function Ingredients() {
           ingredient: { id: res.name, ...ingredient },
         });
       });
-  };
+  }, []);
 
   const clearError = () => {
     dispatchHttp({type: 'CLEAR'})
 
   };
 
-  const removeIngredientHandler = (ingredientId) => {
+  const removeIngredientHandler = useCallback((ingredientId) => {
     dispatchHttp({type: 'SEND'});
     fetch(
       `https://react-basics-df486-default-rtdb.firebaseio.com/ingredients/${ingredientId}.json`,
       {
         method: 'DELETE',
       }
-    )
+      )
       .then(() => {
         dispatchHttp({type: 'SEND'})
         dispatchIngredient({ type: 'DELETE', id: ingredientId });
@@ -85,11 +85,16 @@ function Ingredients() {
       .catch((error) => {
         dispatchHttp({tyoe: 'ERROR', errorMessage: error})
       });
-  };
+  },[]);
 
   const filterIngredientsHandler = useCallback((filteredIngredients) => {
     dispatchIngredient({ type: 'SET', ingredients: filteredIngredients });
   }, []);
+
+  cosnt ingredientList = useMemo(<IngredientList
+    ingredients={userIngredients}
+    onRemoveItem={removeIngredientHandler}
+    />,[])
 
   return (
     <div className='App'>
@@ -102,10 +107,7 @@ function Ingredients() {
 
       <section>
         <Search onSearchedIngredients={filterIngredientsHandler} />
-        <IngredientList
-          ingredients={userIngredients}
-          onRemoveItem={removeIngredientHandler}
-        />
+
       </section>
     </div>
   );
